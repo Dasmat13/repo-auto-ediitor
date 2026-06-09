@@ -24,7 +24,7 @@ app.use(express.json());
 app.post('/api/validate-key', async (req, res) => {
   const { provider, key } = req.body;
 
-  let apiKey = key;
+  let apiKey = key ? key.trim().replace(/[^\x20-\x7E]/g, '') : key;
   let prov = provider.toLowerCase();
 
   // If no key passed via parameter, try to find any valid key in environment
@@ -70,7 +70,7 @@ app.get('/api/annotate', async (req, res) => {
   // validate required fields
   if (!repo) return res.status(400).json({ error: 'repo URL is required' });
 
-  let apiKey = key;
+  let apiKey = key ? key.trim().replace(/[^\x20-\x7E]/g, '') : key;
   let prov = provider.toLowerCase();
 
   // If no key passed via parameter, try to find any valid key in environment

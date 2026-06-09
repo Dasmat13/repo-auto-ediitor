@@ -36,7 +36,7 @@ const opts = program.opts();
 
 // ─── Main function ────────────────────────────────────────────
 async function main() {
-  let apiKey = opts.key;
+  let apiKey = opts.key ? opts.key.trim().replace(/[^\x20-\x7E]/g, '') : opts.key;
   let provider = opts.provider.toLowerCase();
 
   // If no key passed via CLI, look for any key in environment
