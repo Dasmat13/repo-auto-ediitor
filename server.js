@@ -12,6 +12,7 @@ const { annotateFile }  = require('./src/annotator');
 const { generateNotes } = require('./src/notesGen');
 const { generateIndex } = require('./src/indexGen');
 const { pushChanges }   = require('./src/pusher');
+const { detectProvider } = require('./src/ai');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -21,20 +22,40 @@ app.use(express.json());
 
 // ── SSE endpoint: runs the full pipeline and streams progress ─
 app.get('/api/annotate', async (req, res) => {
-  const { repo, provider = 'gemini', key, branch = 'main', only = '', skip = '', skipPush = 'false' } = req.query;
+  const { repo, provider = 'auto', key, branch = 'main', only = '', skip = '', skipPush = 'false' } = req.query;
 
   // validate required fields
   if (!repo) return res.status(400).json({ error: 'repo URL is required' });
 
-  // select key based on selected provider
-  const prov = provider.toLowerCase();
-  let envKeyName = 'GEMINI_API_KEY';
-  if (prov === 'groq') envKeyName = 'GROQ_API_KEY';
-  if (prov === 'openai') envKeyName = 'OPENAI_API_KEY';
+  let apiKey = key;
+  let prov = provider.toLowerCase();
 
-  const apiKey = key || process.env[envKeyName];
+  // If no key passed via parameter, try to find any valid key in environment
   if (!apiKey) {
-    return res.status(400).json({ error: `${provider.toUpperCase()} API key required` });
+    if (process.env.GROQ_API_KEY) {
+      apiKey = process.env.GROQ_API_KEY;
+      if (prov === 'auto') prov = 'groq';
+    } else if (process.env.GEMINI_API_KEY) {
+      apiKey = process.env.GEMINI_API_KEY;
+      if (prov === 'auto') prov = 'gemini';
+    } else if (process.env.OPENAI_API_KEY) {
+      apiKey = process.env.OPENAI_API_KEY;
+      if (prov === 'auto') prov = 'openai';
+    } else if (process.env.API_KEY) {
+      apiKey = process.env.API_KEY;
+    }
+  }
+
+  // Detect provider based on key format
+  if (apiKey) {
+    const detected = detectProvider(apiKey);
+    if (prov === 'auto' || prov !== detected) {
+      prov = detected;
+    }
+  }
+
+  if (!apiKey) {
+    return res.status(400).json({ error: 'No API key provided. Please check your inputs or server .env file.' });
   }
 
   // set SSE headers
@@ -70,7 +91,7 @@ app.get('/api/annotate', async (req, res) => {
     const noteFiles = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      send('progress', `📝 Annotating: ${file.relPath}`, {
+      send('progress', `📝 Annotating: ${file.relPath} (Using ${prov.toUpperCase()})`, {
         step: 3,
         current: i + 1,
         total: files.length,
@@ -104,7 +125,7 @@ app.get('/api/annotate', async (req, res) => {
     }
 
     // all done
-    send('done', '🎉 All done! Your repo is fully annotated.', {
+    send('done', `🎉 All done! Your repo is fully annotated using ${prov.toUpperCase()}.`, {
       notesCount: noteFiles.length,
       repoUrl: repo,
     });

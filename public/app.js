@@ -35,7 +35,10 @@ const keyLink        = document.getElementById('keyLink');
 
 providerSelect.addEventListener('change', () => {
   const val = providerSelect.value;
-  if (val === 'gemini') {
+  if (val === 'auto') {
+    apiKeyInput.placeholder = 'Paste your API key (Gemini, Groq, or OpenAI)';
+    detectAndSetLabel();
+  } else if (val === 'gemini') {
     keyLabel.textContent = 'Gemini API Key';
     apiKeyInput.placeholder = 'AIza...';
     keyLink.textContent = 'Get free key →';
@@ -52,6 +55,39 @@ providerSelect.addEventListener('change', () => {
     keyLink.href = 'https://platform.openai.com/api-keys';
   }
 });
+
+function detectAndSetLabel() {
+  const key = apiKeyInput.value.trim();
+  if (key.startsWith('gsk_')) {
+    keyLabel.textContent = 'Detected: Groq API Key';
+    keyLink.textContent = 'Groq Console →';
+    keyLink.href = 'https://console.groq.com/keys';
+  } else if (key.startsWith('AIza')) {
+    keyLabel.textContent = 'Detected: Gemini API Key';
+    keyLink.textContent = 'Google AI Studio →';
+    keyLink.href = 'https://aistudio.google.com/app/apikey';
+  } else if (key.startsWith('sk-')) {
+    keyLabel.textContent = 'Detected: OpenAI API Key';
+    keyLink.textContent = 'OpenAI Platform →';
+    keyLink.href = 'https://platform.openai.com/api-keys';
+  } else {
+    keyLabel.textContent = 'API Key';
+    keyLink.textContent = 'Get key →';
+    keyLink.href = '#';
+  }
+}
+
+apiKeyInput.addEventListener('input', () => {
+  if (providerSelect.value === 'auto') {
+    detectAndSetLabel();
+  }
+});
+
+// initialize label state
+if (providerSelect.value === 'auto') {
+  apiKeyInput.placeholder = 'Paste your API key (Gemini, Groq, or OpenAI)';
+  detectAndSetLabel();
+}
 
 // ── Form submit handler ─────────────────────────────────────
 form.addEventListener('submit', async (e) => {

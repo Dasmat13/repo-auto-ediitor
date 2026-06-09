@@ -2,6 +2,7 @@
 
 // ─────────────────────────────────────────────────────────────
 // index.js — Main CLI entry point for repo-auto-editor
+// Auto-detects AI provider from any key provided or from .env
 // ─────────────────────────────────────────────────────────────
 
 require('dotenv').config();
@@ -15,6 +16,7 @@ const { annotateFile }   = require('./src/annotator');
 const { generateNotes }  = require('./src/notesGen');
 const { generateIndex }  = require('./src/indexGen');
 const { pushChanges }    = require('./src/pusher');
+const { detectProvider } = require('./src/ai');
 
 // ─── CLI setup ────────────────────────────────────────────────
 program
@@ -22,8 +24,8 @@ program
   .description('Auto-annotate any GitHub repo with AI comments and study notes (any language)')
   .version('1.0.0')
   .requiredOption('-r, --repo <url>',    'GitHub repo URL  (e.g. https://github.com/user/repo.git)')
-  .option('-p, --provider <provider>',   'AI provider: gemini, groq, or openai', 'gemini')
-  .option('-k, --key <key>',             'API key (overrides environment variables)')
+  .option('-p, --provider <provider>',   'AI provider: gemini, groq, openai, or auto', 'auto')
+  .option('-k, --key <key>',             'API key (any provider - auto-detected)')
   .option('-b, --branch <branch>',       'Branch to push to', 'main')
   .option('--skip-push',                 'Skip git push — annotate locally only')
   .option('--only <ext>',                'Only annotate files with this extension (e.g. ".py")')
@@ -34,18 +36,39 @@ const opts = program.opts();
 
 // ─── Main function ────────────────────────────────────────────
 async function main() {
-  const provider = opts.provider.toLowerCase();
-  
-  // select appropriate environment variable based on provider
-  let envKeyName = 'GEMINI_API_KEY';
-  if (provider === 'groq') envKeyName = 'GROQ_API_KEY';
-  if (provider === 'openai') envKeyName = 'OPENAI_API_KEY';
+  let apiKey = opts.key;
+  let provider = opts.provider.toLowerCase();
 
-  const apiKey = opts.key || process.env[envKeyName];
+  // If no key passed via CLI, look for any key in environment
+  if (!apiKey) {
+    if (process.env.GROQ_API_KEY) {
+      apiKey = process.env.GROQ_API_KEY;
+      if (provider === 'auto') provider = 'groq';
+    } else if (process.env.GEMINI_API_KEY) {
+      apiKey = process.env.GEMINI_API_KEY;
+      if (provider === 'auto') provider = 'gemini';
+    } else if (process.env.OPENAI_API_KEY) {
+      apiKey = process.env.OPENAI_API_KEY;
+      if (provider === 'auto') provider = 'openai';
+    } else if (process.env.API_KEY) {
+      apiKey = process.env.API_KEY;
+    }
+  }
+
+  // Auto-detect provider if provider is set to 'auto' and we have a key
+  if (provider === 'auto' && apiKey) {
+    provider = detectProvider(apiKey);
+  } else if (apiKey && provider !== 'auto') {
+    // Double-check if the provided key matches the requested provider, and auto-correct if needed
+    const detected = detectProvider(apiKey);
+    if (detected !== provider) {
+      provider = detected;
+    }
+  }
 
   if (!apiKey) {
-    console.error(chalk.red(`\n❌  ${provider.toUpperCase()} API key required.`));
-    console.error(chalk.dim(`    Use --key YOUR_KEY  or  add ${envKeyName}=... to .env\n`));
+    console.error(chalk.red('\n❌  No API key found.'));
+    console.error(chalk.dim('    Please set GROQ_API_KEY, GEMINI_API_KEY, or OPENAI_API_KEY in .env, or pass --key\n'));
     process.exit(1);
   }
 
