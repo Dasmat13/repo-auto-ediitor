@@ -49,7 +49,7 @@ async function generateText({ provider, apiKey, prompt, model }) {
 
   } else if (prov === 'groq') {
     const groq = new Groq({ apiKey });
-    const modelName = model || 'llama-3.3-70b-specdec';
+    const modelName = model || 'llama-3.3-70b-versatile';
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: modelName,
