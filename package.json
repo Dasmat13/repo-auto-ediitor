@@ -1,0 +1,22 @@
+{
+  "name": "repo-auto-editor",
+  "version": "1.0.0",
+  "description": "Give it any GitHub repo URL — it auto-annotates EVERY code file with inline comments and generates beginner-friendly study notes using Gemini AI. Supports any programming language.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "glob": "^10.4.5",
+    "ora": "^5.4.1",
+    "simple-git": "^3.27.0"
+  },
+  "keywords": ["ai", "gemini", "annotator", "code-comments", "notes", "automation", "github"],
+  "author": "Dasmat Hansda",
+  "license": "MIT"
+}
