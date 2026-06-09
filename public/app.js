@@ -20,12 +20,56 @@ const repoPill     = document.getElementById('repoPill');
 const progressTitle = document.getElementById('progressTitle');
 const toggleKeyBtn = document.getElementById('toggleKey');
 const apiKeyInput  = document.getElementById('apiKey');
+const testKeyBtn   = document.getElementById('testKeyBtn');
+const keyStatusMsg = document.getElementById('keyStatusMsg');
 
 // ── Toggle password visibility ──────────────────────────────
 toggleKeyBtn.addEventListener('click', () => {
   const isPassword = apiKeyInput.type === 'password';
   apiKeyInput.type = isPassword ? 'text' : 'password';
   toggleKeyBtn.textContent = isPassword ? '🙈' : '👁';
+});
+
+// ── Test Key verification ───────────────────────────────────
+testKeyBtn.addEventListener('click', async () => {
+  const key      = apiKeyInput.value.trim();
+  const provider = providerSelect.value;
+
+  if (!key) {
+    keyStatusMsg.textContent = 'Please enter a key first.';
+    keyStatusMsg.style.color = 'var(--yellow)';
+    return;
+  }
+
+  keyStatusMsg.textContent = 'Testing connection...';
+  keyStatusMsg.style.color = 'var(--muted)';
+  testKeyBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/validate-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, key })
+    });
+    
+    const data = await res.json();
+    if (data.valid) {
+      keyStatusMsg.textContent = `✓ Key is valid! (${data.provider.toUpperCase()})`;
+      keyStatusMsg.style.color = 'var(--green)';
+    } else {
+      let errMsg = data.error || 'Invalid key';
+      if (errMsg.includes('API_KEY_INVALID')) {
+        errMsg = 'API key is invalid or not registered.';
+      }
+      keyStatusMsg.textContent = `✗ ${errMsg}`;
+      keyStatusMsg.style.color = 'var(--red)';
+    }
+  } catch (err) {
+    keyStatusMsg.textContent = `✗ Connection error: ${err.message}`;
+    keyStatusMsg.style.color = 'var(--red)';
+  } finally {
+    testKeyBtn.disabled = false;
+  }
 });
 
 // ── Handle provider change ──────────────────────────────────

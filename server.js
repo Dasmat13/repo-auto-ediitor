@@ -12,13 +12,56 @@ const { annotateFile }  = require('./src/annotator');
 const { generateNotes } = require('./src/notesGen');
 const { generateIndex } = require('./src/indexGen');
 const { pushChanges }   = require('./src/pusher');
-const { detectProvider } = require('./src/ai');
+const { detectProvider, generateText } = require('./src/ai');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// ── Validation endpoint: checks if API key works ─────────────────
+app.post('/api/validate-key', async (req, res) => {
+  const { provider, key } = req.body;
+
+  let apiKey = key;
+  let prov = provider.toLowerCase();
+
+  // If no key passed via parameter, try to find any valid key in environment
+  if (!apiKey) {
+    if (prov === 'groq' && process.env.GROQ_API_KEY) apiKey = process.env.GROQ_API_KEY;
+    else if (prov === 'gemini' && process.env.GEMINI_API_KEY) apiKey = process.env.GEMINI_API_KEY;
+    else if (prov === 'openai' && process.env.OPENAI_API_KEY) apiKey = process.env.OPENAI_API_KEY;
+  }
+
+  // Detect provider based on key format
+  if (apiKey) {
+    const detected = detectProvider(apiKey);
+    if (prov === 'auto' || prov !== detected) {
+      prov = detected;
+    }
+  }
+
+  if (!apiKey) {
+    return res.status(400).json({ valid: false, error: 'No API key provided.' });
+  }
+
+  try {
+    const response = await generateText({
+      provider: prov,
+      apiKey: apiKey,
+      prompt: 'Respond with exactly one word "OK" to verify this connection.'
+    });
+
+    if (response.trim().toUpperCase().includes('OK')) {
+      return res.json({ valid: true, provider: prov });
+    } else {
+      return res.json({ valid: false, error: `Unexpected response from ${prov}: ${response.substring(0, 100)}` });
+    }
+  } catch (err) {
+    return res.json({ valid: false, error: err.message });
+  }
+});
 
 // ── SSE endpoint: runs the full pipeline and streams progress ─
 app.get('/api/annotate', async (req, res) => {
