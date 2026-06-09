@@ -74,7 +74,7 @@ async function main() {
 
   // print header
   console.log(chalk.bold.cyan('\n╔══════════════════════════════════════════╗'));
-  console.log(chalk.bold.cyan(`║   🤖  Repo Auto-Editor  ·  Using ${provider.toUpperCase().padEnd(6)}  ║`));
+  console.log(chalk.bold.cyan(`║   🤖  Explain My Code  ·  Using ${provider.toUpperCase().padEnd(6)}   ║`));
   console.log(chalk.bold.cyan('╚══════════════════════════════════════════╝\n'));
 
   const extraSkip = opts.skip ? opts.skip.split(',').map(s => s.trim()) : [];

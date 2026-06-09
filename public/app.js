@@ -227,6 +227,8 @@ form.addEventListener('submit', async (e) => {
   };
 });
 
+backBtn.addEventListener('click', resetForm);
+
 // ── UI helpers ──────────────────────────────────────────────
 
 function showProgress(repo) {

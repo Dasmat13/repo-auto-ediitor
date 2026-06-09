@@ -1,5 +1,5 @@
 {
-  "name": "repo-auto-editor",
+  "name": "explain-my-code",
   "version": "1.0.0",
   "description": "Give it any GitHub repo URL — it auto-annotates EVERY code file with inline comments and generates beginner-friendly study notes using Gemini AI. Supports any programming language.",
   "main": "index.js",
