@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repo Auto-Editor · AI Code Annotator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Animated background orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🤖</span>
+        <div>
+          <h1>Repo Auto-Editor</h1>
+          <p class="tagline">AI-powered code annotator for any GitHub repo</p>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge">Powered by Gemini</span>
+        <span class="badge badge-outline">Any Language</span>
+      </div>
+    </header>
+
+    <!-- Main card -->
+    <main>
+      <div class="card" id="formCard">
+
+        <!-- Form title -->
+        <div class="card-header">
+          <h2>🚀 Annotate a Repository</h2>
+          <p>Paste any GitHub repo URL and let AI add comments + generate study notes for every file.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="annotateForm">
+
+          <!-- Repo URL -->
+          <div class="field">
+            <label for="repoUrl">
+              <span class="field-icon">🔗</span>
+              GitHub Repo URL <span class="required">*</span>
+            </label>
+            <input
+              type="url"
+              id="repoUrl"
+              placeholder="https://github.com/username/repo.git"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- API Key -->
+          <div class="field">
+            <label for="apiKey">
+              <span class="field-icon">🔑</span>
+              Gemini API Key <span class="required">*</span>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="get-key-link">Get free key →</a>
+            </label>
+            <div class="input-with-toggle">
+              <input
+                type="password"
+                id="apiKey"
+                placeholder="AIza..."
+                required
+                autocomplete="off"
+              />
+              <button type="button" id="toggleKey" class="toggle-btn" title="Show/hide key">👁</button>
+            </div>
+          </div>
+
+          <!-- Advanced options (collapsed by default) -->
+          <details class="advanced">
+            <summary>⚙️ Advanced Options</summary>
+            <div class="advanced-grid">
+              <div class="field">
+                <label for="branch">Branch</label>
+                <input type="text" id="branch" value="main" placeholder="main" />
+              </div>
+              <div class="field">
+                <label for="onlyExt">Only extension</label>
+                <input type="text" id="onlyExt" placeholder=".py  or  .js" />
+              </div>
+              <div class="field">
+                <label for="skipDirs">Skip folders (comma-separated)</label>
+                <input type="text" id="skipDirs" placeholder="tests, docs" />
+              </div>
+              <div class="field checkbox-field">
+                <label>
+                  <input type="checkbox" id="skipPush" />
+                  <span>Annotate locally only (don't push)</span>
+                </label>
+              </div>
+            </div>
+          </details>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span id="btnText">✨ Annotate Repo</span>
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Progress card (hidden until running) -->
+      <div class="card progress-card hidden" id="progressCard">
+
+        <div class="progress-header">
+          <h2 id="progressTitle">🔄 Annotating...</h2>
+          <div class="repo-pill" id="repoPill"></div>
+        </div>
+
+        <!-- Step indicators -->
+        <div class="steps">
+          <div class="step" id="step1" data-step="1">
+            <div class="step-dot"></div>
+            <span>Clone</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step2" data-step="2">
+            <div class="step-dot"></div>
+            <span>Scan</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step3" data-step="3">
+            <div class="step-dot"></div>
+            <span>Annotate</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step4" data-step="4">
+            <div class="step-dot"></div>
+            <span>Index</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step5" data-step="5">
+            <div class="step-dot"></div>
+            <span>Push</span>
+          </div>
+        </div>
+
+        <!-- File progress bar -->
+        <div class="progress-bar-wrap hidden" id="progressBarWrap">
+          <div class="progress-label">
+            <span id="progressLabel">Processing files...</span>
+            <span id="progressCount">0 / 0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Live log terminal -->
+        <div class="terminal" id="terminal">
+          <div class="terminal-header">
+            <span class="t-dot red"></span>
+            <span class="t-dot yellow"></span>
+            <span class="t-dot green"></span>
+            <span class="terminal-title">Live Output</span>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <p class="t-dim">Waiting for output...</p>
+          </div>
+        </div>
+
+        <!-- Success/error result -->
+        <div class="result hidden" id="result"></div>
+
+        <!-- Back button -->
+        <button class="btn-secondary hidden" id="backBtn" onclick="resetForm()">
+          ← Annotate another repo
+        </button>
+
+      </div>
+
+    </main>
+
+    <!-- How it works section -->
+    <section class="how-it-works">
+      <h3>How it works</h3>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Clone</h4>
+          <p>Clones your repo to a secure temp folder</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>Scan</h4>
+          <p>Finds every code file — any language supported</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>Annotate</h4>
+          <p>Gemini adds a comment on every single line</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4>Notes</h4>
+          <p>Generates key concepts, bugs & interview Q&A</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">5</div>
+          <h4>Push</h4>
+          <p>Commits and pushes all changes to GitHub</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built by <a href="https://github.com/Dasmat13" target="_blank">Dasmat13</a> · Powered by Gemini AI
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
