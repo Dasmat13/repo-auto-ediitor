@@ -20,8 +20,8 @@ Supports **any programming language**: JavaScript, TypeScript, Python, Go, Rust,
 
 ### 1. Clone this tool
 ```bash
-git clone https://github.com/Dasmat13/repo-auto-ediitor.git
-cd repo-auto-ediitor
+git clone https://github.com/Dasmat13/explain-my-repo.git
+cd explain-my-repo
 npm install
 ```
 
