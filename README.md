@@ -1,4 +1,4 @@
-# 🤖 Repo Auto-Editor
+# 🤖 Explain My Repo
 
 > Give it **any GitHub repo URL** — it automatically annotates every code file with beginner-friendly inline comments and generates structured study notes. Supports **Gemini**, **Groq**, and **OpenAI**.
 
