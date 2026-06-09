@@ -1,26 +1,20 @@
 // ─────────────────────────────────────────────────────────────
-// src/annotator.js — Calls Gemini AI to add inline comments
+// src/annotator.js — Calls AI to add inline comments
 // to every line of a code file. Logic is NEVER changed.
 // ─────────────────────────────────────────────────────────────
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs   = require('fs');    // to write back the annotated file
-const chalk = require('chalk');
+const fs = require('fs');
+const { generateText } = require('./ai');
 
 /**
- * Sends a code file to Gemini and replaces its content with a
+ * Sends a code file to AI and replaces its content with a
  * fully commented version. The code logic is never modified.
  *
- * @param {Object} file     - File object from scanner.js
- * @param {string} apiKey   - Gemini API key
+ * @param {Object} file       - File object from scanner.js
+ * @param {string} provider   - 'gemini', 'groq', or 'openai'
+ * @param {string} apiKey     - AI API key
  */
-async function annotateFile(file, apiKey) {
-  // initialise the Gemini client with our API key
-  const genAI  = new GoogleGenerativeAI(apiKey);
-
-  // use gemini-1.5-flash — fast, free tier, great for code tasks
-  const model  = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
+async function annotateFile(file, provider, apiKey) {
   // ── Build the prompt ────────────────────────────────────────
   const prompt = `
 You are an expert ${file.language} teacher creating study material for beginners.
@@ -43,11 +37,11 @@ CODE:
 ${file.content}
 `.trim();
 
-  // ── Call the API ─────────────────────────────────────────────
-  const result = await model.generateContent(prompt);
-  let annotated = result.response.text().trim();
+  // ── Call the AI client wrapper ────────────────────────────────
+  let annotated = await generateText({ provider, apiKey, prompt });
+  annotated = annotated.trim();
 
-  // strip any accidental markdown code fences Gemini might add
+  // strip any accidental markdown code fences AI might add
   annotated = stripCodeFences(annotated);
 
   // write the annotated content back to the file on disk
@@ -58,11 +52,10 @@ ${file.content}
 }
 
 /**
- * Removes markdown code fences if Gemini wraps output in them.
+ * Removes markdown code fences if AI wraps output in them.
  * e.g. ```javascript ... ``` → just the code inside
  */
 function stripCodeFences(text) {
-  // match opening fence like ```js or ``` or ```python
   const fenceRegex = /^```[\w]*\n?([\s\S]*?)```\s*$/m;
   const match = text.match(fenceRegex);
   return match ? match[1].trim() : text;

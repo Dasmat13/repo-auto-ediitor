@@ -1,26 +1,23 @@
 // ─────────────────────────────────────────────────────────────
 // src/notesGen.js — Generates a detailed notes .md file for
-// each code file using Gemini AI.
+// each code file using AI.
 // Notes include: key concepts, must-know points, errors, interview Q&A
 // ─────────────────────────────────────────────────────────────
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
+const { generateText } = require('./ai');
 
 /**
  * Generates a notes markdown file for a given code file.
  *
- * @param {Object} file     - File object (path, language, content, relPath)
- * @param {string} repoPath - Root path of the repo
- * @param {string} apiKey   - Gemini API key
- * @returns {Object|null}   - { relPath, title } info about the created note, or null on failure
+ * @param {Object} file       - File object (path, language, content, relPath)
+ * @param {string} repoPath   - Root path of the repo
+ * @param {string} provider   - 'gemini', 'groq', or 'openai'
+ * @param {string} apiKey     - AI API key
+ * @returns {Object|null}     - { relPath, title } info about the created note, or null on failure
  */
-async function generateNotes(file, repoPath, apiKey) {
-  // initialise Gemini
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
+async function generateNotes(file, repoPath, provider, apiKey) {
   // ── Build the prompt ────────────────────────────────────────
   const prompt = `
 You are an expert ${file.language} teacher writing comprehensive study notes for beginners.
@@ -56,12 +53,10 @@ ${file.content}
 Return ONLY the markdown content. No extra explanation. No code fences around the whole output.
 `.trim();
 
-  // ── Call the API ─────────────────────────────────────────────
-  const result = await model.generateContent(prompt);
-  const notes  = result.response.text().trim();
+  // ── Call the AI client wrapper ────────────────────────────────
+  const notes = await generateText({ provider, apiKey, prompt });
 
   // ── Save the note file ───────────────────────────────────────
-  // create the notes/ directory at repo root if it doesn't exist
   const notesDir = path.join(repoPath, 'notes');
   if (!fs.existsSync(notesDir)) {
     fs.mkdirSync(notesDir, { recursive: true });
@@ -71,20 +66,20 @@ Return ONLY the markdown content. No extra explanation. No code fences around th
   const noteFileName = file.relPath
     .replace(/[\/\\]/g, '_')  // replace path separators with underscores
     .replace(/\.[^.]+$/, '')  // remove the original extension
-    + '.md';                   // add .md extension
+    + '.md';
 
   const noteFilePath = path.join(notesDir, noteFileName);
 
   // write the notes file
-  fs.writeFileSync(noteFilePath, notes, 'utf8');
+  fs.writeFileSync(noteFilePath, notes.trim(), 'utf8');
 
   // return metadata for the index generator
   return {
-    noteFile:  noteFilePath,                              // absolute path to note file
-    relPath:   path.relative(repoPath, noteFilePath),    // relative path (e.g. notes/app.md)
-    sourceFile: file.relPath,                             // source code file this note covers
-    language:  file.language,                             // programming language
-    fileName:  noteFileName,                              // just the note filename
+    noteFile:  noteFilePath,
+    relPath:   path.relative(repoPath, noteFilePath),
+    sourceFile: file.relPath,
+    language:  file.language,
+    fileName:  noteFileName,
   };
 }
 

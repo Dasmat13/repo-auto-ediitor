@@ -1,23 +1,18 @@
 # 🤖 Repo Auto-Editor
 
-> Give it **any GitHub repo URL** — it automatically annotates every code file with beginner-friendly inline comments and generates structured study notes. Powered by **Gemini AI**.
+> Give it **any GitHub repo URL** — it automatically annotates every code file with beginner-friendly inline comments and generates structured study notes. Supports **Gemini**, **Groq**, and **OpenAI**.
 
 Supports **any programming language**: JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby, Shell, Swift, Kotlin, Dart, SQL, YAML, HTML, CSS, and more.
 
 ---
 
-## ✨ What it does
+## ✨ Features
 
-1. **Clones** your GitHub repo to a temp folder
-2. **Scans** every code file (any language, skips node_modules/.git/binaries)
-3. **Annotates** each file — adds an inline comment on EVERY line (logic never changed)
-4. **Generates** a `notes/filename.md` for each file with:
-   - 🔑 Key Concepts table
-   - 📌 Must-Know Points
-   - 🐛 Bugs found (what / how / when / fix)
-   - 🎤 Interview Questions & Answers
-5. **Creates** `notes/README.md` — a master index of all notes
-6. **Commits & pushes** everything back to your repo
+- **Multi-Provider Support**: Choose between Google Gemini, Groq (Llama 3/Mixtral - free & super fast), or OpenAI.
+- **Web UI & CLI**: Run it through an elegant dark glassmorphism web panel or via raw terminal commands.
+- **Pedagogical Annotations**: Adds a step-by-step explanatory comment to every single line.
+- **Comprehensive Notes**: Creates a `notes/` folder in the target repo containing key concepts, interview Q&As, and bug trackers.
+- **Automatic GitHub Push**: Commits and pushes the generated notes and annotations back to your repo automatically.
 
 ---
 
@@ -30,48 +25,56 @@ cd repo-auto-ediitor
 npm install
 ```
 
-### 2. Get a Gemini API key (free)
-→ https://aistudio.google.com/app/apikey
-
-### 3. Add your key
+### 2. Configure API Keys
+Copy `.env.example` to `.env` and fill in whichever API key you want to use:
 ```bash
 cp .env.example .env
-# edit .env and add your key:
-# GEMINI_API_KEY=your_key_here
 ```
+- **Gemini Key** (Free): [Google AI Studio](https://aistudio.google.com/app/apikey)
+- **Groq Key** (Free & Fast): [Groq Console](https://console.groq.com/keys)
+- **OpenAI Key** (Paid): [OpenAI Platform](https://platform.openai.com/api-keys)
 
 ---
 
 ## 💻 Usage
 
+### Option A: Web User Interface (Recommended)
+Start the local server:
 ```bash
-# Annotate an entire repo (all languages)
-node index.js --repo https://github.com/yourname/your-repo.git
+npm run web
+```
+Open **`http://localhost:3000`** in your browser. Select your preferred provider, paste your repo URL, enter your API key (or leave blank if it's set in `.env`), and run it with live SSE tracking!
+
+---
+
+### Option B: Command Line Interface (CLI)
+
+```bash
+# Annotate using Groq (Llama 3.3) - fast and free
+node index.js --provider groq --repo https://github.com/yourname/your-repo.git
+
+# Annotate using Gemini (Default)
+node index.js --provider gemini --repo https://github.com/yourname/your-repo.git
 
 # Only annotate Python files
-node index.js --repo https://github.com/yourname/repo.git --only .py
+node index.js --provider groq --repo https://github.com/yourname/your-repo.git --only .py
 
 # Skip specific folders
-node index.js --repo https://github.com/yourname/repo.git --skip "tests,docs"
+node index.js --provider groq --repo https://github.com/yourname/your-repo.git --skip "tests,docs"
 
 # Annotate but DON'T push (preview locally first)
-node index.js --repo https://github.com/yourname/repo.git --skip-push
-
-# Push to a different branch
-node index.js --repo https://github.com/yourname/repo.git --branch dev
-
-# Pass API key directly (no .env needed)
-node index.js --repo https://github.com/yourname/repo.git --key YOUR_KEY
+node index.js --provider groq --repo https://github.com/yourname/your-repo.git --skip-push
 ```
 
 ---
 
-## ⚙️ Options
+## ⚙️ CLI Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
 | `-r, --repo <url>` | GitHub repo URL **(required)** | — |
-| `-k, --key <key>` | Gemini API key (or use `.env`) | — |
+| `-p, --provider <name>`| AI provider: `gemini`, `groq`, or `openai` | `gemini` |
+| `-k, --key <key>` | AI provider API key (or use `.env`) | — |
 | `-b, --branch <name>` | Branch to push to | `main` |
 | `--only <ext>` | Only annotate this extension (e.g. `.py`) | all |
 | `--skip <dirs>` | Extra dirs to skip, comma-separated | — |
@@ -94,37 +97,6 @@ your-repo/
 │   └── src_utils.md    ← same for utils.py
 └── ...
 ```
-
----
-
-## 🌍 Supported Languages
-
-| Language | Extensions |
-|----------|-----------|
-| JavaScript | `.js` `.mjs` `.cjs` `.jsx` |
-| TypeScript | `.ts` `.tsx` |
-| Python | `.py` `.pyw` |
-| Go | `.go` |
-| Rust | `.rs` |
-| Java | `.java` |
-| Kotlin | `.kt` `.kts` |
-| C / C++ | `.c` `.h` `.cpp` `.cc` `.hpp` |
-| C# | `.cs` |
-| PHP | `.php` |
-| Ruby | `.rb` |
-| Shell | `.sh` `.bash` `.zsh` |
-| Swift | `.swift` |
-| Dart | `.dart` |
-| SQL | `.sql` |
-| YAML | `.yaml` `.yml` |
-| HTML/CSS | `.html` `.css` `.scss` |
-| + more | `.toml` `.json` `.r` `.scala` `.lua` |
-
----
-
-## 👤 Author
-
-**Dasmat Hansda** — [@Dasmat13](https://github.com/Dasmat13)
 
 ---
 

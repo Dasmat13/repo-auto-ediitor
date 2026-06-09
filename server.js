@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // server.js — Express web server for the Repo Auto-Editor UI
 // Serves the UI and streams real-time progress via SSE
-// Run: node server.js  →  open http://localhost:3000
 // ─────────────────────────────────────────────────────────────
 
 require('dotenv').config();
@@ -17,27 +16,34 @@ const { pushChanges }   = require('./src/pusher');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// serve static files from public/
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // ── SSE endpoint: runs the full pipeline and streams progress ─
 app.get('/api/annotate', async (req, res) => {
-  const { repo, key, branch = 'main', only = '', skip = '', skipPush = 'false' } = req.query;
+  const { repo, provider = 'gemini', key, branch = 'main', only = '', skip = '', skipPush = 'false' } = req.query;
 
   // validate required fields
   if (!repo) return res.status(400).json({ error: 'repo URL is required' });
 
-  const apiKey = key || process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(400).json({ error: 'Gemini API key required' });
+  // select key based on selected provider
+  const prov = provider.toLowerCase();
+  let envKeyName = 'GEMINI_API_KEY';
+  if (prov === 'groq') envKeyName = 'GROQ_API_KEY';
+  if (prov === 'openai') envKeyName = 'OPENAI_API_KEY';
 
-  // set SSE headers — keeps connection open and streams data
+  const apiKey = key || process.env[envKeyName];
+  if (!apiKey) {
+    return res.status(400).json({ error: `${provider.toUpperCase()} API key required` });
+  }
+
+  // set SSE headers
   res.setHeader('Content-Type',  'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection',    'keep-alive');
   res.flushHeaders();
 
-  // helper: send a progress event to the browser
+  // helper: send progress event
   const send = (type, message, data = {}) => {
     res.write(`data: ${JSON.stringify({ type, message, ...data })}\n\n`);
   };
@@ -73,15 +79,15 @@ app.get('/api/annotate', async (req, res) => {
       });
 
       try {
-        await annotateFile(file, apiKey);
-        const noteFile = await generateNotes(file, repoPath, apiKey);
+        await annotateFile(file, prov, apiKey);
+        const noteFile = await generateNotes(file, repoPath, prov, apiKey);
         if (noteFile) noteFiles.push(noteFile);
         send('file_done', `✓ ${file.relPath}`, { current: i + 1, total: files.length });
       } catch (err) {
         send('warn', `⚠️ Skipped ${file.relPath}: ${err.message}`, { current: i + 1 });
       }
 
-      // rate limit between API calls
+      // rate limit
       if (i < files.length - 1) await sleep(1200);
     }
 

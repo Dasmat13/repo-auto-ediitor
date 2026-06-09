@@ -28,11 +28,37 @@ toggleKeyBtn.addEventListener('click', () => {
   toggleKeyBtn.textContent = isPassword ? '🙈' : '👁';
 });
 
+// ── Handle provider change ──────────────────────────────────
+const providerSelect = document.getElementById('provider');
+const keyLabel       = document.getElementById('keyLabel');
+const keyLink        = document.getElementById('keyLink');
+
+providerSelect.addEventListener('change', () => {
+  const val = providerSelect.value;
+  if (val === 'gemini') {
+    keyLabel.textContent = 'Gemini API Key';
+    apiKeyInput.placeholder = 'AIza...';
+    keyLink.textContent = 'Get free key →';
+    keyLink.href = 'https://aistudio.google.com/app/apikey';
+  } else if (val === 'groq') {
+    keyLabel.textContent = 'Groq API Key';
+    apiKeyInput.placeholder = 'gsk_...';
+    keyLink.textContent = 'Get free key →';
+    keyLink.href = 'https://console.groq.com/keys';
+  } else if (val === 'openai') {
+    keyLabel.textContent = 'OpenAI API Key';
+    apiKeyInput.placeholder = 'sk-proj-...';
+    keyLink.textContent = 'Get key →';
+    keyLink.href = 'https://platform.openai.com/api-keys';
+  }
+});
+
 // ── Form submit handler ─────────────────────────────────────
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const repo     = document.getElementById('repoUrl').value.trim();
+  const provider = document.getElementById('provider').value;
   const key      = apiKeyInput.value.trim();
   const branch   = document.getElementById('branch').value.trim() || 'main';
   const only     = document.getElementById('onlyExt').value.trim();
@@ -43,7 +69,7 @@ form.addEventListener('submit', async (e) => {
   showProgress(repo);
 
   // build SSE URL with query params
-  const params = new URLSearchParams({ repo, key, branch, only, skip, skipPush });
+  const params = new URLSearchParams({ repo, provider, key, branch, only, skip, skipPush });
   const eventSource = new EventSource(`/api/annotate?${params}`);
 
   let totalFiles = 0;
