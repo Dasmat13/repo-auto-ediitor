@@ -1,69 +1,106 @@
+<div align="center">
+
 # 🤖 Explain My Repo
 
-> Give it **any GitHub repo URL** — it automatically annotates every code file with beginner-friendly inline comments and generates structured study notes. Supports **Gemini**, **Groq**, and **OpenAI**.
+**AI-powered code annotation tool — point it at any GitHub repo and watch every line get explained.**
 
-Supports **any programming language**: JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby, Shell, Swift, Kotlin, Dart, SQL, YAML, HTML, CSS, and more.
+[![MIT License](https://img.shields.io/badge/License-MIT-violet?style=flat-square)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Gemini](https://img.shields.io/badge/Gemini-1.5--flash-4285F4?style=flat-square&logo=google&logoColor=white)](https://aistudio.google.com)
+[![Groq](https://img.shields.io/badge/Groq-Llama--3.3-E8C97E?style=flat-square)](https://console.groq.com)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-10B981?style=flat-square&logo=openai&logoColor=white)](https://platform.openai.com)
+
+<br/>
+
+> Give it **any GitHub repo URL** — it auto-annotates every code file with beginner-friendly inline comments and generates structured study notes with key concepts, interview Q&As, and bug analysis.
+
+</div>
 
 ---
 
 ## ✨ Features
 
-- **Multi-Provider Support**: Choose between Google Gemini, Groq (Llama 3/Mixtral - free & super fast), or OpenAI.
-- **Web UI & CLI**: Run it through an elegant dark glassmorphism web panel or via raw terminal commands.
-- **Pedagogical Annotations**: Adds a step-by-step explanatory comment to every single line.
-- **Comprehensive Notes**: Creates a `notes/` folder in the target repo containing key concepts, interview Q&As, and bug trackers.
-- **Automatic GitHub Push**: Commits and pushes the generated notes and annotations back to your repo automatically.
+| Feature | Description |
+|---|---|
+| 🌐 **Web UI + CLI** | Glassmorphic web console with real-time SSE progress **or** classic terminal CLI |
+| 🤖 **Multi-Provider AI** | Auto-detects provider from your API key — supports Gemini, Groq & OpenAI |
+| 💬 **Inline Annotations** | Every single line of code gets a clear, beginner-friendly explanation |
+| 📓 **Study Notes** | Generates a `notes/` folder with key concepts, bug tracker & interview Q&As per file |
+| 🔁 **Auto Push** | Commits and pushes annotated files + notes back to your GitHub repo |
+| 🧠 **20+ Languages** | JS, TS, Python, Go, Rust, Java, C/C++, C#, PHP, Ruby, Swift, Kotlin, Dart, SQL, and more |
+| 🔑 **Key Validator** | Built-in diagnostic tool to test your API key before running |
+| ⚡ **Free Tier Ready** | Use Groq (Llama 3.3) for fast, high-quality annotations at **zero cost** |
 
 ---
 
-## 🚀 Setup
+## 🚀 Quick Start
 
-### 1. Clone this tool
+### 1. Clone & Install
+
 ```bash
 git clone https://github.com/Dasmat13/explain-my-repo.git
 cd explain-my-repo
 npm install
 ```
 
-### 2. Configure API Keys
-Copy `.env.example` to `.env` and fill in whichever API key you want to use:
+### 2. Add Your API Key
+
+Copy the example env file and add your key:
+
 ```bash
 cp .env.example .env
 ```
-- **Gemini Key** (Free): [Google AI Studio](https://aistudio.google.com/app/apikey)
-- **Groq Key** (Free & Fast): [Groq Console](https://console.groq.com/keys)
-- **OpenAI Key** (Paid): [OpenAI Platform](https://platform.openai.com/api-keys)
+
+Then open `.env` and fill in **one** of these:
+
+```env
+GEMINI_API_KEY=AIza...          # Free — Google AI Studio
+GROQ_API_KEY=gsk_...            # Free & Fast — Groq Console
+OPENAI_API_KEY=sk-proj-...      # Paid — OpenAI Platform
+```
+
+| Provider | Speed | Cost | Model | Get Key |
+|---|---|---|---|---|
+| **Groq** | ⚡ Fastest | Free | `llama-3.3-70b-versatile` | [console.groq.com](https://console.groq.com/keys) |
+| **Gemini** | 🚀 Fast | Free | `gemini-1.5-flash` | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| **OpenAI** | 🎯 Precise | Paid | `gpt-4o-mini` | [platform.openai.com](https://platform.openai.com/api-keys) |
 
 ---
 
 ## 💻 Usage
 
-### Option A: Web User Interface (Recommended)
-Start the local server:
+### Option A — Web UI *(Recommended)*
+
 ```bash
 npm run web
 ```
-Open **`http://localhost:3000`** in your browser. Select your preferred provider, paste your repo URL, enter your API key (or leave blank if it's set in `.env`), and run it with live SSE tracking!
+
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+
+- Paste any GitHub repo URL (or click a suggestion)
+- Select your AI provider — the target model auto-detects
+- Paste your API key and click **⚡ Test Key** to validate
+- Hit **✨ Annotate Repo** and watch real-time progress stream in
 
 ---
 
-### Option B: Command Line Interface (CLI)
+### Option B — CLI
 
 ```bash
-# Annotate using Groq (Llama 3.3) - fast and free
-node index.js --provider groq --repo https://github.com/yourname/your-repo.git
+# Annotate with Groq (free & fast)
+node index.js --provider groq --repo https://github.com/yourname/repo.git
 
-# Annotate using Gemini (Default)
-node index.js --provider gemini --repo https://github.com/yourname/your-repo.git
+# Annotate with Gemini
+node index.js --provider gemini --repo https://github.com/yourname/repo.git
 
 # Only annotate Python files
-node index.js --provider groq --repo https://github.com/yourname/your-repo.git --only .py
+node index.js --provider groq --repo https://github.com/yourname/repo.git --only .py
 
 # Skip specific folders
-node index.js --provider groq --repo https://github.com/yourname/your-repo.git --skip "tests,docs"
+node index.js --provider groq --repo https://github.com/yourname/repo.git --skip "tests,docs"
 
-# Annotate but DON'T push (preview locally first)
-node index.js --provider groq --repo https://github.com/yourname/your-repo.git --skip-push
+# Preview locally without pushing to GitHub
+node index.js --provider groq --repo https://github.com/yourname/repo.git --skip-push
 ```
 
 ---
@@ -71,31 +108,56 @@ node index.js --provider groq --repo https://github.com/yourname/your-repo.git -
 ## ⚙️ CLI Options
 
 | Flag | Description | Default |
-|------|-------------|---------|
+|---|---|---|
 | `-r, --repo <url>` | GitHub repo URL **(required)** | — |
-| `-p, --provider <name>`| AI provider: `gemini`, `groq`, or `openai` | `gemini` |
-| `-k, --key <key>` | AI provider API key (or use `.env`) | — |
-| `-b, --branch <name>` | Branch to push to | `main` |
-| `--only <ext>` | Only annotate this extension (e.g. `.py`) | all |
-| `--skip <dirs>` | Extra dirs to skip, comma-separated | — |
-| `--skip-push` | Don't push — just annotate locally | false |
+| `-p, --provider <name>` | AI provider: `gemini`, `groq`, or `openai` | `auto` |
+| `-k, --key <key>` | API key (overrides `.env`) | — |
+| `-b, --branch <name>` | Branch to push annotated files to | `main` |
+| `--only <ext>` | Only annotate files with this extension (e.g. `.py`) | all |
+| `--skip <dirs>` | Comma-separated list of directories to skip | — |
+| `--skip-push` | Annotate locally only — don't push to GitHub | `false` |
 
 ---
 
 ## 📁 Output Structure
 
-After running, your target repo will look like:
+After running, your **target repo** will look like this:
 
 ```
 your-repo/
 ├── src/
-│   ├── app.js          ← now has inline comments on every line
-│   └── utils.py        ← same for every language
+│   ├── app.js          ← every line now has an AI-generated comment
+│   └── utils.py        ← same treatment for every language
 ├── notes/
-│   ├── README.md       ← master index of all notes
+│   ├── README.md       ← master index of all generated notes
 │   ├── src_app.md      ← key concepts, bugs, interview Q&A for app.js
 │   └── src_utils.md    ← same for utils.py
 └── ...
+```
+
+Each `notes/*.md` file contains:
+- 📌 **Key Concepts** — what the file does and how it works
+- 🐛 **Bug Tracker** — potential issues spotted by the AI
+- 🎤 **Interview Q&A** — questions you could be asked about this code
+
+---
+
+## 🗂️ Project Structure
+
+```
+explain-my-repo/
+├── index.js          ← CLI entry point
+├── server.js         ← Express web server + SSE streaming
+├── src/
+│   ├── ai.js         ← unified AI provider abstraction (Gemini/Groq/OpenAI)
+│   ├── annotator.js  ← core annotation engine
+│   ├── notes.js      ← study notes generator
+│   └── utils.js      ← language detection, file filters
+├── public/
+│   ├── index.html    ← glassmorphic web UI (landing + console)
+│   └── app.js        ← frontend JS (SSE handling, form logic)
+├── .env.example      ← environment variable template
+└── package.json
 ```
 
 ---
@@ -103,3 +165,11 @@ your-repo/
 ## 📄 License
 
 MIT — free to use, modify, and share.
+
+---
+
+<div align="center">
+
+Built by [Dasmat13](https://github.com/Dasmat13) · Powered by **Gemini, Groq & OpenAI**
+
+</div>
