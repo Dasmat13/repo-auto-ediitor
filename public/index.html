@@ -781,6 +781,69 @@
     .result.success { background: rgba(107,158,138,0.1); border: 1px solid rgba(107,158,138,0.3); color: var(--sage); }
     .result.error   { background: rgba(196,120,138,0.1); border: 1px solid rgba(196,120,138,0.3); color: var(--rose); }
 
+    /* Custom Input Focus Effects */
+    input[type="url"],
+    input[type="password"],
+    input[type="text"],
+    select {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    input[type="url"]:focus,
+    input[type="password"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--violet) !important;
+      box-shadow: 0 0 18px rgba(139,92,246,0.3) !important;
+      background: rgba(13,13,20,0.85) !important;
+      outline: none;
+    }
+
+    /* Terminal scrollbar styling */
+    .terminal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .terminal-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    .terminal-body::-webkit-scrollbar-thumb:hover {
+      background: var(--violet);
+    }
+
+    /* Sample suggestion buttons */
+    .sample-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sample-btn:hover {
+      background: rgba(139, 92, 246, 0.15) !important;
+      border-color: rgba(139, 92, 246, 0.45) !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Pulse animation for active validation status */
+    .pulse-status {
+      animation: statusPulse 1.5s infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
     /* ── UTILS ─────────────────────────────────────────── */
     .hidden { display: none !important; }
     @media (max-width: 768px) {
@@ -891,14 +954,25 @@
                 autocomplete="off"
                 style="background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--parchment); font-family: var(--ff-body); font-size: 0.9rem; width: 100%; outline: none;"
               />
+              <!-- Suggestions row -->
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; align-items: center;">
+                <span style="font-size: 0.75rem; color: var(--muted);">Suggestions:</span>
+                <button type="button" class="sample-btn" data-url="https://github.com/Dasmat13/explain-my-repo.git">💡 explain-my-repo</button>
+                <button type="button" class="sample-btn" data-url="https://github.com/octocat/Spoon-Knife.git">🍴 Spoon-Knife</button>
+                <button type="button" class="sample-btn" data-url="https://github.com/expressjs/cors.git">📦 cors</button>
+              </div>
             </div>
 
             <!-- Provider -->
             <div class="field" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-              <label for="provider" style="font-size: 0.875rem; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 6px;">
-                <span class="field-icon">🤖</span>
-                AI Provider
-              </label>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="provider" style="font-size: 0.875rem; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+                  <span class="field-icon">🤖</span>
+                  AI Provider
+                </label>
+                <!-- Active Model badge -->
+                <span id="activeModelBadge" class="prov-note" style="font-size: 0.65rem; padding: 3px 10px; border-radius: 100px; background: rgba(139,92,246,0.1); color: var(--violet); border: 1px solid rgba(139,92,246,0.2); font-family: var(--ff-mono);">gemini-1.5-flash</span>
+              </div>
               <select id="provider" style="background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--parchment); font-family: var(--ff-body); font-size: 0.9rem; outline: none; width: 100%;">
                 <option value="auto" selected>Auto-Detect from API Key</option>
                 <option value="gemini">Gemini (Google)</option>

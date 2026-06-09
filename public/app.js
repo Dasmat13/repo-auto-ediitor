@@ -43,6 +43,7 @@ testKeyBtn.addEventListener('click', async () => {
 
   keyStatusMsg.textContent = 'Testing connection...';
   keyStatusMsg.style.color = 'var(--muted)';
+  keyStatusMsg.classList.add('pulse-status');
   testKeyBtn.disabled = true;
 
   try {
@@ -53,6 +54,7 @@ testKeyBtn.addEventListener('click', async () => {
     });
     
     const data = await res.json();
+    keyStatusMsg.classList.remove('pulse-status');
     if (data.valid) {
       keyStatusMsg.textContent = `✓ Key is valid! (${data.provider.toUpperCase()})`;
       keyStatusMsg.style.color = 'var(--green)';
@@ -65,6 +67,7 @@ testKeyBtn.addEventListener('click', async () => {
       keyStatusMsg.style.color = 'var(--red)';
     }
   } catch (err) {
+    keyStatusMsg.classList.remove('pulse-status');
     keyStatusMsg.textContent = `✗ Connection error: ${err.message}`;
     keyStatusMsg.style.color = 'var(--red)';
   } finally {
@@ -125,13 +128,72 @@ apiKeyInput.addEventListener('input', () => {
   if (providerSelect.value === 'auto') {
     detectAndSetLabel();
   }
+  updateActiveModelLabel();
 });
 
-// initialize label state
+const activeModelBadge = document.getElementById('activeModelBadge');
+
+function updateActiveModelLabel() {
+  const provider = providerSelect.value;
+  const key = apiKeyInput.value.trim();
+  
+  let targetModel = 'auto-detecting...';
+  let badgeColor = 'rgba(139,92,246,0.1)';
+  let textColor = 'var(--violet)';
+  let borderColor = 'rgba(139,92,246,0.2)';
+  
+  if (provider === 'gemini' || (provider === 'auto' && key.startsWith('AIza'))) {
+    targetModel = 'gemini-1.5-flash';
+    badgeColor = 'rgba(66,133,244,0.1)';
+    textColor = '#74aaff';
+    borderColor = 'rgba(66,133,244,0.2)';
+  } else if (provider === 'groq' || (provider === 'auto' && key.startsWith('gsk_'))) {
+    targetModel = 'llama-3.3-70b-versatile';
+    badgeColor = 'rgba(232,201,126,0.1)';
+    textColor = 'var(--gold)';
+    borderColor = 'rgba(232,201,126,0.2)';
+  } else if (provider === 'openai' || (provider === 'auto' && key.startsWith('sk-'))) {
+    targetModel = 'gpt-4o-mini';
+    badgeColor = 'rgba(16,185,129,0.1)';
+    textColor = '#6ee7b7';
+    borderColor = 'rgba(16,185,129,0.2)';
+  } else if (provider === 'auto' && !key) {
+    targetModel = 'paste key to detect';
+    badgeColor = 'rgba(255,255,255,0.03)';
+    textColor = 'var(--muted)';
+    borderColor = 'var(--border)';
+  }
+  
+  activeModelBadge.textContent = `Target: ${targetModel}`;
+  activeModelBadge.style.backgroundColor = badgeColor;
+  activeModelBadge.style.color = textColor;
+  activeModelBadge.style.borderColor = borderColor;
+}
+
+providerSelect.addEventListener('change', updateActiveModelLabel);
+
+// ── Handle suggestion clicks ────────────────────────────────
+document.querySelectorAll('.sample-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const urlInput = document.getElementById('repoUrl');
+    urlInput.value = btn.dataset.url;
+    urlInput.focus();
+    // highlight input field with active border
+    urlInput.style.borderColor = 'var(--violet)';
+    urlInput.style.boxShadow = '0 0 24px rgba(139,92,246,0.4)';
+    setTimeout(() => {
+      urlInput.style.borderColor = '';
+      urlInput.style.boxShadow = '';
+    }, 1200);
+  });
+});
+
+// initialize states
 if (providerSelect.value === 'auto') {
   apiKeyInput.placeholder = 'Paste your API key (Gemini, Groq, or OpenAI)';
   detectAndSetLabel();
 }
+updateActiveModelLabel();
 
 // ── Form submit handler ─────────────────────────────────────
 form.addEventListener('submit', async (e) => {
