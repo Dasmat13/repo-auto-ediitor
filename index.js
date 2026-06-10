@@ -78,7 +78,7 @@ async function main() {
   console.log(chalk.bold.cyan('╚══════════════════════════════════════════╝\n'));
 
   const extraSkip = opts.skip ? opts.skip.split(',').map(s => s.trim()) : [];
-  const repoPath = await cloneRepo(opts.repo);
+  const repoPath = await cloneRepo(opts.repo, opts.branch || 'main');
   const files = await scanFiles(repoPath, opts.only, extraSkip);
 
   if (files.length === 0) {

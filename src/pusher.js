@@ -1,10 +1,23 @@
 // ─────────────────────────────────────────────────────────────
 // src/pusher.js — Commits all changes and pushes to GitHub
+// Falls back gracefully when git binary is not available (Vercel)
 // ─────────────────────────────────────────────────────────────
 
-const simpleGit = require('simple-git');   // git operations
-const chalk     = require('chalk');        // terminal colors
-const ora       = require('ora');          // spinner
+const { execSync } = require('child_process');
+const chalk  = require('chalk');
+const ora    = require('ora');
+
+/**
+ * Check if git is available on this system.
+ */
+function hasGit() {
+  try {
+    execSync('git --version', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Stages all changes, commits with a descriptive message, and pushes.
@@ -13,7 +26,14 @@ const ora       = require('ora');          // spinner
  * @param {string} branch    - Branch to push to (default: 'main')
  */
 async function pushChanges(repoPath, branch = 'main') {
-  // create a git instance pointed at our cloned repo
+  // If git is not installed (e.g. Vercel serverless), skip push gracefully
+  if (!hasGit()) {
+    console.log(chalk.yellow('⚠️  Git not available in this environment — skipping push.'));
+    console.log(chalk.dim('   Annotations were applied locally. Run locally with git to push.'));
+    return;
+  }
+
+  const simpleGit = require('simple-git');
   const git = simpleGit(repoPath);
 
   const spinner = ora('Committing and pushing changes...').start();

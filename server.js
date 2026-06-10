@@ -115,7 +115,7 @@ app.get('/api/annotate', async (req, res) => {
   try {
     // step 1: clone
     send('step', '📥 Cloning repository...', { step: 1 });
-    const repoPath = await cloneRepo(repo);
+    const repoPath = await cloneRepo(repo, branch);
     send('ok', `✅ Cloned successfully`, { step: 1 });
 
     // step 2: scan files
