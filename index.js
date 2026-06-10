@@ -121,7 +121,7 @@ async function main() {
   console.log(chalk.green('\n✅  notes/README.md index created'));
 
   if (!opts.skipPush) {
-    await pushChanges(repoPath, opts.branch);
+    await pushChanges(repoPath, opts.branch, opts.repo, files, noteFiles);
     console.log(chalk.green('✅  Changes pushed to GitHub'));
   }
 

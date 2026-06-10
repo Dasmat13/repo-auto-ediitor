@@ -163,7 +163,7 @@ app.get('/api/annotate', async (req, res) => {
     // step 5: push
     if (skipPush !== 'true') {
       send('step', '🚀 Pushing changes to GitHub...', { step: 5 });
-      await pushChanges(repoPath, branch);
+      await pushChanges(repoPath, branch, repo, files, noteFiles);
       send('ok', '✅ Pushed to GitHub!', { step: 5 });
     }
 
